@@ -7,6 +7,7 @@ const plugin_id = "homebridge-moriz"
  */
 module.exports = function (homebridge) {
     register(homebridge, "Curtain");
+    register(homebridge, "Temperature");
 };
 
 function register(homebridge, name) {

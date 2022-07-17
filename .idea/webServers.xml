@@ -9,8 +9,8 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
-      <webServer id="0a90c5bb-97f0-4f09-ace3-342145abfc1f" name="MorizHomebridge" url="http://192.168.178.81:8080">
-        <fileTransfer rootFolder="/var/lib/homebridge/plugins" accessType="SFTP" host="192.168.178.81" port="22" sshConfigId="cd3c12c9-207a-446a-aeca-0a6b0d8f2042" sshConfig="HomebridgeMoriz">
+      <webServer id="0a90c5bb-97f0-4f09-ace3-342145abfc1f" name="MorizHomebridge" url="http://192.168.178.181:8080">
+        <fileTransfer rootFolder="/var/lib/homebridge/plugins" accessType="SFTP" host="192.168.178.181" port="22" sshConfigId="cd3c12c9-207a-446a-aeca-0a6b0d8f2042" sshConfig="HomebridgeMoriz">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

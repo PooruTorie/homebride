@@ -31,7 +31,6 @@ module.exports.clazz = class Curtain extends Accessory {
 
         this.name = config["name"];
         this.serial = config["serial"] || "12341234";
-        this.client = config["client"];
         this.clickTime = config["clickTime"] || 100;
         this.clkPin = (config["pins"] || {})["clock"] || 17;
         this.dtPin = (config["pins"] || {})["data"] || 27;

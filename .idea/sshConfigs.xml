@@ -5,7 +5,7 @@
       <sshConfig authType="PASSWORD" host="192.168.178.48" id="bbdd2811-1e4e-41ae-83c4-9d485ba0864e" port="22" customName="Homebridge" nameFormat="CUSTOM" username="pi" useOpenSSHConfig="true">
         <option name="customName" value="Homebridge" />
       </sshConfig>
-      <sshConfig authType="PASSWORD" host="192.168.178.81" id="cd3c12c9-207a-446a-aeca-0a6b0d8f2042" port="22" customName="HomebridgeMoriz" nameFormat="CUSTOM" username="pi" useOpenSSHConfig="true">
+      <sshConfig authType="PASSWORD" host="192.168.178.181" id="cd3c12c9-207a-446a-aeca-0a6b0d8f2042" port="22" customName="HomebridgeMoriz" nameFormat="CUSTOM" username="pi" useOpenSSHConfig="true">
         <option name="customName" value="HomebridgeMoriz" />
       </sshConfig>
     </configs>

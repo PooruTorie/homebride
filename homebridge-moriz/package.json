@@ -2,6 +2,7 @@
   "name": "homebridge-moriz",
   "author": "Paul Triebel",
   "main": "index.js",
+  "version": "1.0.0",
   "keywords": [
     "homebridge-plugin"
   ],
@@ -16,7 +17,8 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "dependencies": {
-    "pigpio": "latest"
+    "pigpio": "^3.3.1",
+    "pigpio-dht": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^16.10.9",
