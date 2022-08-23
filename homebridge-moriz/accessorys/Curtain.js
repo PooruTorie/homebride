@@ -8,7 +8,8 @@ let {
     Service, HAPStatus
 } = require("homebridge");
 const Accessory = require("../Accessory");
-const RotaryEncoder = require("./libs/RotaryEncoder").RotaryEncoder;
+const i2c = require("i2c-bus");
+const VL53L0X = require("vl53l0x");
 const Gpio = require("pigpio").Gpio;
 const fs = require("fs");
 
@@ -17,7 +18,6 @@ module.exports.clazz = class Curtain extends Accessory {
     position = 0;
     state = 2;
     target = 0;
-    rawPosition = 0;
 
     /**
      * @param {Logger} log
@@ -32,21 +32,15 @@ module.exports.clazz = class Curtain extends Accessory {
         this.name = config["name"];
         this.serial = config["serial"] || "12341234";
         this.clickTime = config["clickTime"] || 100;
-        this.clkPin = (config["pins"] || {})["clock"] || 17;
-        this.dtPin = (config["pins"] || {})["data"] || 27;
-        this.stopButton = new Gpio((config["pins"] || {})["stop"] || 2, {mode: Gpio.OUTPUT});
-        this.upButton = new Gpio((config["pins"] || {})["up"] || 3, {mode: Gpio.OUTPUT});
-        this.downButton = new Gpio((config["pins"] || {})["down"] || 4, {mode: Gpio.OUTPUT});
-        this.maxRotation = config["calibration"]["maxRotation"];
+        this.sensorAddress = (config["sensor"] || {})["address"] || 0x29;
+        this.sensorUpdateOffset = (config["sensor"] || {})["updateOffset"] || 10;
+        this.curtainSelectIndex = ((config["control"] || {})["select"] || {})["index"] || 1;
+        this.selectUpButton = new Gpio(((config["control"] || {})["select"] || {})["up"] || 21, {mode: Gpio.INPUT});
+        this.stopButton = new Gpio((config["control"] || {})["stop"] || 2, {mode: Gpio.INPUT});
+        this.upButton = new Gpio((config["control"] || {})["up"] || 3, {mode: Gpio.INPUT});
+        this.downButton = new Gpio((config["control"] || {})["down"] || 4, {mode: Gpio.INPUT});
+        this.maxDistance = config["calibration"]["maxDistance"];
         this.targetTolerance = config["calibration"]["targetTolerance"] || 5;
-
-        const rotary = new RotaryEncoder(this.clkPin, this.dtPin);
-
-        rotary.on("rotate", (value) => {
-            this.updatePosition(value);
-        });
-
-        this.registerServices();
 
         fs.readFile("save.json", (err, data) => {
             if (!err) {
@@ -54,12 +48,28 @@ module.exports.clazz = class Curtain extends Accessory {
                 if (data.target) {
                     this.target = data.target;
                 }
-                if (data.rawPosition) {
-                    rotary.value = data.rawPosition * 4;
-                    this.updatePosition(data.rawPosition);
-                }
             }
         });
+
+        i2c.openPromisified(3, {forceAccess: true}).then(async bus => {
+            const laser = VL53L0X(bus, this.sensorAddress);
+            await laser.setSignalRateLimit(0.1);
+            await laser.setVcselPulsePeriod("pre", 18);
+            await laser.setVcselPulsePeriod("final", 14);
+            await laser.setMeasurementTimingBudget(200000);
+
+            let lastDistance = undefined;
+
+            setInterval(async () => {
+                const distance = await laser.measure();
+                if (!lastDistance || Math.abs(lastDistance - distance) > this.sensorUpdateOffset) {
+                    lastDistance = distance;
+                    this.updatePosition(distance);
+                }
+            }, 1000);
+        });
+
+        this.registerServices();
     }
 
     registerServices() {
@@ -101,20 +111,38 @@ module.exports.clazz = class Curtain extends Accessory {
      */
     setTarget(value, next) {
         this.target = value;
+        fs.writeFile("save.json", JSON.stringify({
+            target: this.target
+        }), () => null);
         this.checkState();
         next(HAPStatus.SUCCESS, this.target);
     }
 
     updatePosition(value) {
-        this.rawPosition = value;
-        this.position = Math.max(0, Math.min(this.rawPosition, this.maxRotation)) / this.maxRotation * 100;
+        this.position = Math.max(0, Math.min(value, this.maxDistance)) / this.maxDistance * 100;
         this.checkState();
         this.curtainService.getCharacteristic(Characteristic.CurrentPosition).updateValue(this.position);
     }
 
-    pushButton(pin) {
-        pin.digitalWrite(1);
-        setTimeout(() => pin.digitalWrite(0), this.clickTime);
+    async pushButton(pin) {
+        const sleep = s => new Promise(r => setTimeout(r, s));
+
+        /*
+        for (let i = 1; i < this.curtainSelectIndex; i++) {
+            this.selectUpButton.mode(Gpio.INPUT);
+            await sleep(this.clickTime);
+            this.selectUpButton.mode(Gpio.OUTPUT);
+            await sleep(this.clickTime);
+            this.selectUpButton.mode(Gpio.INPUT);
+            await sleep(1000);
+        }
+        */
+
+        pin.mode(Gpio.INPUT);
+        await sleep(this.clickTime);
+        pin.mode(Gpio.OUTPUT);
+        await sleep(this.clickTime);
+        pin.mode(Gpio.INPUT);
     }
 
     checkState() {
@@ -138,11 +166,6 @@ module.exports.clazz = class Curtain extends Accessory {
                 }
             }
         }
-
-        fs.writeFile("save.json", JSON.stringify({
-            target: this.target,
-            rawPosition: this.rawPosition
-        }), () => null);
 
         this.curtainService.getCharacteristic(Characteristic.PositionState).updateValue(this.state);
     }

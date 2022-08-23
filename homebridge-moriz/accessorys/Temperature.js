@@ -34,6 +34,8 @@ module.exports.clazz = class Curtain extends Accessory {
         this.registerServices();
 
         sensor.on("result", data => {
+            console.log(data);
+
             this.temperature = data.temperature;
             this.humidity = data.humidity;
 

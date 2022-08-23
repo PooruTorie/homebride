@@ -2,7 +2,7 @@
   "name": "homebridge-moriz",
   "author": "Paul Triebel",
   "main": "index.js",
-  "version": "1.0.0",
+  "version": "2.2.0",
   "keywords": [
     "homebridge-plugin"
   ],
@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "pigpio": "^3.3.1",
-    "pigpio-dht": "^1.1.1"
+    "pigpio-dht": "^1.1.1",
+    "vl53l0x": "^2.0.0",
+    "i2c-bus": "^5.2.2"
   },
   "devDependencies": {
     "@types/node": "^16.10.9",
