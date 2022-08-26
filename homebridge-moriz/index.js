@@ -1,13 +1,24 @@
-const {API} = require("homebridge")
+const {API} = require("homebridge");
+const pigpio = require("pigpio");
 
-const plugin_id = "homebridge-moriz"
+const plugin_id = "homebridge-moriz";
 
 /**
  * @param {API} homebridge
  */
 module.exports = function (homebridge) {
+    if (homebridge === "pigpio") {
+        return pigpio;
+    }
+
     register(homebridge, "Curtain");
-    register(homebridge, "Temperature");
+    //register(homebridge, "Temperature"); fix todo
+    register(homebridge, "Switches");
+
+    homebridge.on("shutdown", () => {
+        pigpio.terminate();
+        console.log("Cleanup pigpio");
+    });
 };
 
 function register(homebridge, name) {

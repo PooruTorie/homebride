@@ -4,13 +4,14 @@ let {
     API,
     CharacteristicSetCallback,
     CharacteristicGetCallback,
+    CharacteristicValue,
     Characteristic,
     Service, HAPStatus
 } = require("homebridge");
 const Accessory = require("../Accessory");
 const i2c = require("i2c-bus");
 const VL53L0X = require("vl53l0x");
-const Gpio = require("pigpio").Gpio;
+const Gpio = require("../index")("pigpio").Gpio;
 const fs = require("fs");
 
 module.exports.clazz = class Curtain extends Accessory {
@@ -40,7 +41,7 @@ module.exports.clazz = class Curtain extends Accessory {
         this.upButton = new Gpio((config["control"] || {})["up"] || 3, {mode: Gpio.INPUT});
         this.downButton = new Gpio((config["control"] || {})["down"] || 4, {mode: Gpio.INPUT});
         this.maxDistance = config["calibration"]["maxDistance"];
-        this.targetTolerance = config["calibration"]["targetTolerance"] || 5;
+        this.targetTolerance = config["calibration"]["targetTolerance"];
 
         fs.readFile("save.json", (err, data) => {
             if (!err) {
@@ -138,8 +139,6 @@ module.exports.clazz = class Curtain extends Accessory {
         }
         */
 
-        pin.mode(Gpio.INPUT);
-        await sleep(this.clickTime);
         pin.mode(Gpio.OUTPUT);
         await sleep(this.clickTime);
         pin.mode(Gpio.INPUT);

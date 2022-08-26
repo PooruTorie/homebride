@@ -7,9 +7,11 @@ let {
     Service, HAPStatus
 } = require("homebridge");
 const Accessory = require("../Accessory");
+
+// TODO Code with Custom pigpio
 const DHT = require("pigpio-dht");
 
-module.exports.clazz = class Curtain extends Accessory {
+module.exports.clazz = class Temperature extends Accessory {
 
     temperature = 0;
     humidity = 0;

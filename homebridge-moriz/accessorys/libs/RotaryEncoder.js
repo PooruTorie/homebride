@@ -1,5 +1,5 @@
 const EventEmitter = require("events").EventEmitter;
-const Gpio = require("pigpio").Gpio;
+const Gpio = require("../../index")("pigpio").Gpio;
 
 module.exports.RotaryEncoder = class RotaryEncoder extends EventEmitter {
 
